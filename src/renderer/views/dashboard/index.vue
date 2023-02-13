@@ -45,6 +45,12 @@ export default {
           route: '/image/index'
         },
         {
+          title: "dashboard.entries.imageFolder.title",
+          supportTypes: ' jpg, jpeg, png, svg',
+          icon: 'el-icon-picture-outline',
+          route: '/img_folder/index'
+        },
+        {
           title: 'dashboard.entries.video.title',
           supportTypes: ' mp4, mov, rmvb, avi',
           icon: 'el-icon-video-camera',

@@ -2,8 +2,9 @@ import store from '../store'
 import { Message } from 'element-ui'
 import { isImage, isVideo } from '@/components/file-tree/lib/util'
 import { i18nRender } from '@/lang'
-const addToFileListFns = ['imageStore/addImages', 'videoStore/addVideos']
-const titles = ['imageList', 'videoList']
+import { isDirectory, isExist } from '@/utils/file'
+const addToFileListFns = ['imageStore/addImages', 'videoStore/addVideos', 'imageFolderStore/addImages']
+const titles = ['imageList', 'videoList', 'imageFolderList']
 
 /**
  * 给某一元素添加拖放文件(图片或视频)的监听器
@@ -15,11 +16,11 @@ const addDragFileListener = function (elementDom) {
     const files = e.dataTransfer.files
     if (files && files.length > 0) {
       // 获取当前Vuex中的文件列表
-      let fileLists = [store.getters['imageStore/imageList'], store.getters['videoStore/videoList']]
+      let fileLists = [store.getters['imageStore/imageList'], store.getters['videoStore/videoList'], store.getters['imageFolderStore/imageList']]
       // 所有拖入文件的路径
       const allPath = Array.from(files).map((item) => item.path)
       // 分别存储图片文件及视频文件的列表
-      const allPaths = [[], []]
+      const allPaths = [[], [], []]
       // 非指定类型的文件列表
       const notImageList = []
       let type = 'warning'
@@ -29,6 +30,8 @@ const addDragFileListener = function (elementDom) {
           allPaths[0].push(path)
         } else if (isVideo(path)) {
           allPaths[1].push(path)
+        } else if (isDirectory(path)) {
+          allPaths[2].push(path)
         } else {
           // 从allPath中剔除非指定类型的文件
           notImageList.push(path)
@@ -36,7 +39,7 @@ const addDragFileListener = function (elementDom) {
       }
 
       // 如果全为非图片及非视频的文件， 直接返回
-      if (!allPaths[0].length && !allPaths[1].length) {
+      if (!allPaths[0].length && !allPaths[1].length && !allPaths[2].length) {
         return
       }
 
@@ -68,7 +71,7 @@ const addDragFileListener = function (elementDom) {
               // 添加到vuex中的列表中
               store.dispatch(addToFileListFn, paths).then(() => {
                 console.log(
-                  index === 0 ? 'imageList' : 'videoList',
+                  index === 0 || index === 2 ? 'imageList' : 'videoList',
                   'Added files:',
                   paths,
                   'Duplicate files not added:',

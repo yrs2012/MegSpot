@@ -25,6 +25,7 @@ const generateFileInfo = (dir) => {
     path: path.resolve(dir),
     type: DEF.TYPE_DIRECTORY,
     hovering: false,
+    isSelect: false,
     children: []
   }
 }
@@ -52,6 +53,7 @@ const listDir = async (dir, fileIcons, options = {}) => {
     path: path.resolve(dir),
     type: DEF.TYPE_DIRECTORY,
     hovering: false,
+    isSelect: false,
     children: []
   }
 

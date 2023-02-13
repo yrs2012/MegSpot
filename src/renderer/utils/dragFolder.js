@@ -3,18 +3,23 @@ import { Message } from 'element-ui'
 import { isDirectory } from './file'
 import { i18nRender } from '@/lang'
 
-const { 'imageStore/getImageFolders': getImageFolders, 'videoStore/getVideoFolders': getVideoFolders } = store.getters
-const [addImageFolders, addVideoFolders] = ['imageStore/addImageFolders', 'videoStore/addVideoFolders']
-const titles = ['imageFolderList', 'videoFolderList']
+const { 'imageStore/getImageFolders': getImageFolders, 
+        'videoStore/getVideoFolders': getVideoFolders, 
+        'imageFolderStore/getImageFolders': getImageFolders2 } = store.getters
+const [addImageFolders, addVideoFolders, addImageFolders2] = 
+      ['imageStore/addImageFolders', 
+      'videoStore/addVideoFolders', 
+      'imageFolderStore/addImageFolders']
+const titles = ['imageFolderList', 'videoFolderList', 'imageFolderList2']
 
 /**
  * 给某一元素添加拖放文件目录的监听器
  * @param {HTMLDivElement} elementDom 将要添加监听器的元素
  * @param {boolean} isImageList 默认为true 即添加图片文件目录，主动设为false 则添加视频文件目录
  */
-const addDragFolderListener = function (elementDom, isImageList = true) {
-  let getFolderList = isImageList ? getImageFolders : getVideoFolders
-  let addToFolderList = isImageList ? addImageFolders : addVideoFolders
+const addDragFolderListener = function (elementDom, isImageList = true, isSelectFolder = false) {
+  let getFolderList = isSelectFolder ? getImageFolders2 : (isImageList ? getImageFolders : getVideoFolders)
+  let addToFolderList = isSelectFolder ? addImageFolders2 : (isImageList ? addImageFolders : addVideoFolders)
 
   elementDom.addEventListener(
     'drop',

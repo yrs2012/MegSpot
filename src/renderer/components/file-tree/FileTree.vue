@@ -54,6 +54,7 @@
         >
           <span flex="main:justify cross:center">
             <span class="folder-item-left" flex="cross:center">
+              <input type="checkbox" v-model="data.isSelect" v-if="selectFolderMode" @change="folderSelect(node, data)" />
               <span class="folder-item-icon" flex-box="1">
                 <svg-icon v-if="!data.isLeaf" icon-class="folder-open-fill"></svg-icon>
                 <svg-icon v-else icon-class="folder-fill"></svg-icon>
@@ -208,6 +209,24 @@ export default {
     multiSelectionBlacklist: {
       type: Array,
       default: () => []
+    },
+    selectFolderMode: {
+      type: Boolean,
+      default: false
+    },
+    handleFolderSelect: {
+      type: Function,
+      default: () => { return false}
+    },
+    hasSelectFolder: {
+      type: Function,
+      default: (path) => { return false}
+    },
+    fileList: {
+      type: Array,
+      default: () => {
+        return []
+      }
     }
   },
   computed: {
@@ -225,7 +244,13 @@ export default {
   watch: {
     openedFolders: {
       handler: async function (newVal, oldVal) {
-        this.treeData = await this.loadMultiDir(this.openedFolders)
+        var folderList = await this.loadMultiDir(this.openedFolders)
+        if (this.selectFolderMode) {
+          folderList.forEach(folder => {
+            folder.isSelect = this.hasSelectFolder(folder.path)
+          })
+        }
+        this.treeData = folderList
       },
       immediate: true
     },
@@ -241,6 +266,37 @@ export default {
       if (this.$refs && this.$refs.elTree) {
         this.$refs.elTree.filter(v)
       }
+    },
+    fileList(newVal, oldVal) {
+      // console.info(`-------FileTree----watch fileList-----------selectFolderMode: `, this.selectFolderMode)
+      if (!this.selectFolderMode) {
+        // 非目录选择模式，无需进行下一步处理
+        return
+      }
+      let { updateKeyChildren, getNode, } = this.$refs.elTree
+      oldVal.forEach((path) => {
+        // 同步删除
+        if (!newVal.includes(path)) {
+          // 更新view    
+          let curNode = getNode(path)
+          if (curNode && curNode.data.isSelect) {
+            curNode.data.isSelect = false
+            updateKeyChildren(path, curNode.data)
+          }
+        }
+      })
+      newVal.forEach((path) => {
+        // 同步新增
+        if (!oldVal.includes(path)) {
+          // this.handleFolderSelect(path)
+          // 更新view
+          let curNode = getNode(path)
+          if (curNode && !curNode.data.isSelect) {
+            curNode.data.isSelect = true
+            updateKeyChildren(path, curNode.data)
+          }
+        }
+      })
     }
   },
   created() {
@@ -260,10 +316,13 @@ export default {
     async loadNode(node, resolve) {
       // 过滤根节点 由于el-tree在不同的地方使用id是逐个增加的 所以不能通过 node.id === 0 判断是否为根
       if (node.data === undefined || node.data.path === undefined) return
-      const nodeData = await listDir(node.data.path, this.fileIcons, {
+      var nodeData = await listDir(node.data.path, this.fileIcons, {
         include: this.includes,
         onlyDir: this.onlyDir
       })
+      if(this.hasSelectFolder(node.data.path)){
+        node.data.isSelect = true
+      }
 
       // 取消递归第二层目录，直接返回包装过后的一层目录文件信息
       // const result = await this.loadMultiDir(nodeData.children);
@@ -311,7 +370,13 @@ export default {
       this.closeFolder(data)
     },
     async onRefreshAllFolder() {
-      this.treeData = await this.loadMultiDir(this.openedFolders)
+      var folderList = await this.loadMultiDir(this.openedFolders)
+      if (this.selectFolderMode) {
+        folderList.forEach(folder => {
+          folder.isSelect = this.hasSelectFolder(folder.path)
+        })
+      }
+      this.treeData = folderList
     },
     truncateName(src) {
       // 使用css方式解决
@@ -321,6 +386,17 @@ export default {
     filterNode(value, data) {
       if (!value) return true
       return data.label.toLocaleLowerCase().indexOf(value.toLocaleLowerCase()) !== -1
+    },
+    folderSelect(node, data) {
+      if (this.selectFolderMode) {
+        this.handleFolderSelect(data.path)
+      }
+    },
+    isSelectFolder(data) {
+      if (this.selectFolderMode) {
+        return this.hasSelectFolder(data.path)
+      }
+      return false;
     }
   },
   async mounted() {

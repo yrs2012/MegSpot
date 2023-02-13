@@ -44,6 +44,12 @@ export const SHARE_PROJECT_DEFAULT_PROPS = () => ({
         smooth: true
       }
     },
+    imageFolderStore: {
+      imageFolderConfig: {
+        layout: LAYOUT_2X1,
+        smooth: true
+      }
+    },
     preferenceStore: {
       // appLanguage: 'en',
       showTitle: true,

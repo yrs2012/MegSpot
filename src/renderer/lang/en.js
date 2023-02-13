@@ -94,6 +94,10 @@ export default {
         title: 'IMAGE',
         desc: 'Image viewer,support to view and compare local pictures'
       },
+      imageFolder: {
+        title: 'IMAGE FOLDER',
+        desc: 'Image folder viewer,support to view and compare local pictures'
+      },
       video: {
         title: 'VIDEO',
         desc: 'video viewer,support to view and compare local video'

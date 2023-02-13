@@ -36,7 +36,7 @@
       </span>
       <span v-else>There is no available files in current directory.</span>
     </template>
-    <vxe-column type="checkbox" width="48"></vxe-column>
+    <vxe-column type="checkbox" width="48" v-if="!selectFolderMode"></vxe-column>
     <vxe-column align="left" show-overflow="tooltip" field="name" title="Name" sortable>
       <template #header>
         <div flex="cross:center">
@@ -78,6 +78,7 @@ import SearchInput from '../search-input'
 import { isImage, isVideo } from '@/components/file-tree/lib/util'
 const { mapActions: imageMapActions } = createNamespacedHelpers('imageStore')
 const { mapActions: videoMapActions } = createNamespacedHelpers('videoStore')
+const { mapActions: imageFolderMapActions } = createNamespacedHelpers('imageFolderStore')
 import { isDirectory, readDir, getFileStatSync } from '@/utils/file'
 import { EOF, DELIMITER, SORTING_FILE_NAME } from '@/constants'
 import chokidar from 'chokidar'
@@ -119,7 +120,15 @@ export default {
     emptyVuexItems: {
       type: Function,
       default: () => {}
-    }
+    },
+    selectFolderMode: {
+      type: Boolean,
+      default: false
+    },
+    selectFolderSortChanged: {
+      type: Function,
+      default: () => {}
+    },
   },
   data() {
     return {
@@ -132,7 +141,8 @@ export default {
       pin: false, // 按下shift
       // 监听当前文件夹的变化,变化后手动刷新目录
       wacther: undefined,
-      canApply: false
+      canApply: false,
+      sortedFileList: []
     }
   },
   computed: {
@@ -250,6 +260,10 @@ export default {
       immediate: true
     },
     fileList(newVal, oldVal) {
+      if (this.selectFolderMode) {
+        // 目录旋转模式时无需设置CheckBox，因为它没有显示
+        return
+      }
       oldVal.forEach((path) => {
         // 同步删除
         if (!newVal.includes(path)) {
@@ -273,11 +287,20 @@ export default {
       if (newVal !== oldVal) {
         this.$emit('canApply', newVal)
       }
+    },
+    sortedFileList(newVal, oldVal) {
+      if (newVal !== oldVal) {
+        this.$emit('sortedFileList', newVal)
+        if (this.selectFolderMode) {
+          this.$emit('selectFolderSortChanged', newVal) // 通知外部更新
+        }
+      }
     }
   },
   methods: {
     ...imageMapActions(['addImages', 'removeImages']),
     ...videoMapActions(['addVideos', 'removeVideos']),
+    ...imageFolderMapActions(['addSelectFolders', 'removeSelectFolders']),
     mySort(data, property, order) {
       let list = []
       // whether to sort by filename
@@ -333,7 +356,7 @@ export default {
           this.canApply = res
         })
       }
-
+      this.sortedFileList = list
       return list
     },
     async applySortFile(data, callback) {

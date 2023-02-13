@@ -145,6 +145,17 @@ export const readDir = (dir) => {
   })
 }
 
+// [同步] 读文件夹内文件列表（第一级目录下）
+export const readDirSync = (dir) => {
+    try {
+      fs.accessSync(dir, fs.constants.R_OK | fs.constants.W_OK)
+      return fs.readdirSync(dir,{ encoding: 'utf-8' })
+    } catch (err) {
+      console.error(`no access permissions! ${dir}`)
+      return []
+    }
+}
+
 // [同步] 检查是否为文件
 export const isFile = (file) => {
   if (!isExist(file)) return false
@@ -245,4 +256,68 @@ export const arraySortByName = (a, b) => {
   }
 
   return result
+}
+
+/**
+ * @function 遍历文件目录，返回所有文件清单
+ * @param {String} dir 文件目录
+ * @param {Object} options 可选
+ *                 - options.include: 只包含include中的文件 ['.xy', '.a', ... ]
+ *                 - options.hiddenFiles: 隐藏.开头的文件
+ *                 - options.onlyDir: boolean 默认false 是否返回文件夹目录
+ *                 - options.onlyFile: boolean 默认false 是否返回子目录
+ */
+export const scanFolderSync = (dir, options = {}) => {
+  console.info("add folder folderPath:", dir)
+
+  if (!(options && typeof options === 'object')) {
+    throw new Error('Invalid options')
+  }
+  if (!isDirectory(dir)) {
+    console.error("scanFolderSync Invalid directory:", dir)
+  }
+
+  const include = Array.isArray(options.include) && options.include.length > 0 ? options.include : null
+  const hiddenFiles = typeof options.hiddenFiles === 'boolean' ? options.hiddenFiles : true
+  const onlyDir = typeof options.onlyDir === 'boolean' ? options.onlyDir : false
+  const onlyFile = typeof options.onlyFile === 'boolean' ? options.onlyFile : true
+  const dirData = { 
+    label: path.basename(dir),
+    dirPath: path.resolve(dir),
+    children: []
+  }
+
+  let files = readDirSync(dir)
+  if (hiddenFiles) {
+    files = files.filter((item) => !item.startsWith('.'))
+  }
+
+  var hasChildren = false
+  for (let i = 0; i < files.length; i++) {
+    const filename = files[i]
+    const filePath = path.resolve(dir, filename)
+    if (isDirectory(filePath)) {
+      if (!onlyFile) { // && !folderBlackList.includes(filename)
+        dirData.children.push(filePath)
+      }
+      hasChildren = true
+    } else if (!onlyDir && isFile(filePath)) {
+      if (include && !include.includes(getExtname(filePath))) continue
+      dirData.children = dirData.children || []
+      dirData.children.push({
+        label: filename,
+        dirPath: filePath
+      })
+    }
+  }
+  if(!onlyFile) {
+    dirData.children.sort((a, b) => {
+      return a.dirPath - b.dirPath
+    })
+  }
+  let sortList = dirData.children.sort((a, b) => arraySortByName(a.label, b.label))
+  let fileInfoList = sortList.map((item) => {
+    return item.dirPath;
+  })
+  return fileInfoList
 }

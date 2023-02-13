@@ -57,5 +57,24 @@ export default [
         component: () => import('@/views/video/VideoCompare')
       }
     ]
+  },
+  {
+    path: '/img_folder',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        name: 'image-folder-root',
+        component: () => import('@/views/img_folder/ImageFolderRoot'),
+        props: {
+          selectFolderMode: true
+        }
+      },
+      {
+        path: 'compare',
+        name: 'image-folder-compare',
+        component: () => import('@/views/img_folder/ImageFolderCompare')
+      }
+    ]
   }
 ]

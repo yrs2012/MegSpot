@@ -94,6 +94,10 @@ export default {
         title: '画像',
         desc: '画像ビューア。画像の表示、比較'
       },
+      imageFolder: {
+        title: '画像フォルダの比較',
+        desc: '画像フォルダの表示と比較。'
+      },
       video: {
         title: '動画',
         desc: '動画プレイヤー。動画の再生、比較'

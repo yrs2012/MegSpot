@@ -55,6 +55,10 @@ export default {
           case 'video-compare':
             this.subNav = this.$t('dashboard.entries.video.title')
             break
+          case 'image-folder-root':
+          case 'image-folder-compare':
+            this.subNav = this.$t('dashboard.entries.imageFolder.title')
+            break
           default:
             console.error('未知的路由名称请修改AppHeader.vue:' + name)
         }

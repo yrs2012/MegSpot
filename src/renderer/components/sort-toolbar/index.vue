@@ -1,7 +1,7 @@
 <template>
   <div class="sort-toolbar-container">
     <el-tooltip :content="$t(this.allSelectd ? 'general.clearAll' : 'general.selectAll')" :open-delay="300">
-      <vxe-checkbox :value="allSelectd" :indeterminate="oneOrMoreSelected" @change="handleSelectAll"></vxe-checkbox>
+      <vxe-checkbox v-if="!selectFolderMode" :value="allSelectd" :indeterminate="oneOrMoreSelected" @change="handleSelectAll"></vxe-checkbox>
     </el-tooltip>
     <el-button v-show="generateVisible" :title="'Generate Sorting File'" @click="generateSortFile">
       {{ $t('sortFile.generate') }}
@@ -44,6 +44,10 @@ export default {
       default: false,
       // 监听当前文件夹下排序文件的变化, 变化后改变按钮状态
       wacther: undefined
+    },
+    selectFolderMode: {
+      type: Boolean,
+      default: false
     }
   },
   data() {

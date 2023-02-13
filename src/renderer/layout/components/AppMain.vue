@@ -18,6 +18,7 @@ const { mapGetters } = createNamespacedHelpers('preferenceStore')
 import { isDirectory, isExist } from '@/utils/file'
 const IMAGE_MODE = 'imageMode'
 const VIDEO_MODE = 'videoMode'
+const IMAGE_FOLDER_MODE = 'imageFolderMode'
 export default {
   name: 'AppMain',
   beforeCreate: async function () {
@@ -64,6 +65,7 @@ export default {
     if (cmd.c) {
       mode === IMAGE_MODE && this.$store.dispatch('imageStore/emptyImages')
       mode === VIDEO_MODE && this.$store.dispatch('videoStore/emptyVideos')
+      mode === IMAGE_FOLDER_MODE && this.$store.dispatch('imageFolderStore/emptySelectFolders')
     }
     // 设置模式但是没有设置路径参数的情况
     if (checkedPath.length === 0) {
@@ -87,6 +89,12 @@ export default {
         this.$store.dispatch('videoStore/setFolderPath', checkedPath[0])
         this.$router.push({
           path: '/video/index'
+        })
+      }
+      if (mode === IMAGE_FOLDER_MODE) {
+        this.$store.dispatch('imageFolderStore/setFolderPath', checkedPath[0])
+        this.$router.push({
+          path: '/img_folder/index'
         })
       }
       if (checkedPath.length > 1) {
